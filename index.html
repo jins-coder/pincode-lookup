@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bulma tutorials</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+    <style>
+        .icon-check,.icon-remove{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<section class="hero is-primary is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                Location Info - India
+            </h1>
+            <h2 class="subtitle">
+                Get information about pin codes
+            </h2>
+            <form id="zipform">
+                <div class="field">
+                    <p class="control has-icons-left has-icons-right">
+                        <input class="input" type="text" id="pincode" placeholder="Enter pincode">
+                        <span class="icon is-small is-left">
+                              <i class="fas fa-map-pin"></i>
+                        </span>
+                        <span class="icon icon-check is-small is-right">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <span class="icon icon-remove is-small is-right">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<br/>
+<div class="container locationInfo">
+
+</div>
+<script>
+    document.querySelector('#zipform').addEventListener('submit',getLocationInfo);
+    document.querySelector('body').addEventListener('click',deleteText);
+    function getLocationInfo(e){
+        //fetch the location
+        const zip = document.querySelector('#pincode').value;
+
+        if(zip.length === 0) {alert('Field cannot be empty'); return;}
+        document.querySelector('.locationInfo').innerHTML ='';
+        fetch(`https://api.postalpincode.in/pincode/${zip}`)
+        .then(response => response.json())
+        .then(data =>{
+            data.forEach(dataItems =>{
+              if(dataItems.Status != 'Success' || dataItems.Status == 404){
+                  showIcon('remove');
+                  document.querySelector('.locationInfo').innerHTML =
+                  `<article class="message is-danger">
+                       <div class="message-header">
+                            <p>Location</p>
+                            <button class="delete" aria-label="delete"></button>
+                          </div>
+                          <div class="message-body">
+                          ${dataItems.Message}
+                          </div>
+                        </article>
+                       `;
+              }else{
+                  showIcon('check');
+                  const  postoffice = dataItems.PostOffice[0];
+                  let pos = Object.keys(postoffice).map(function(key) {
+                          return  `<div class="message-header mb-3">
+                                    <p>${key}</p>
+
+                                  </div>
+                                  <div class="message-body">
+                                   <strong>${postoffice[key]}</strong>
+                               </div>`
+                            }).join('');
+
+
+                  document.querySelector('.locationInfo').innerHTML ="<article class='message is-primary'>"+pos+"</article>";
+
+
+                 }
+            })
+        });
+       //stop form get submitted  when press enter
+        e.preventDefault();
+    }
+    function showIcon(status){
+       document.querySelector(".icon-remove").style.display = "none";
+        document.querySelector(".icon-check").style.display = "none";
+        document.querySelector(`.icon-${status}`).style.display = "inline-flex";
+    }
+    function deleteText(e){
+     if(e.target.className == 'delete'){
+         document.querySelector('.locationInfo').remove();
+         document.querySelector('.pincode').value= '';
+         document.querySelector(".icon-check").remove();
+     }
+    }
+</script>
+</body>
+</html>
