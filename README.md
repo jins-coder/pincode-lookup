@@ -1,4 +1,4 @@
-# pincode-lookup-India 
+# pincode-lookup
 Look up pincodes in india using fetch API and pure javascript with bulma CSS
 
 
